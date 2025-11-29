@@ -257,7 +257,8 @@ Generate AI-powered video highlights.
 
 ## Usage Examples
 
-### Using with Kiro AI
+### Using with\
+ AI
 
 Once configured as an MCP server, you can use YT-NINJA through natural language:
 
