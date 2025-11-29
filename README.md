@@ -30,11 +30,6 @@ A comprehensive YouTube MCP (Model Context Protocol) server that provides AI-pow
 - Detect topics and categories
 - Create AI-powered video highlights
 
-### 🎯 Advanced Features
-- Real-time audio streaming without downloads
-- Podcast mode (audio + transcript + summary + chapters + keywords)
-- Video highlight generation with scoring
-- Caption burning onto videos
 
 ## Installation
 
