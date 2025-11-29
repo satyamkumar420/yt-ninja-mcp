@@ -8,9 +8,6 @@
     "build": "tsup",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "type-check": "tsc --noEmit"

@@ -1,60 +1,40 @@
 # YT-NINJA 🥷
 
-A comprehensive YouTube MCP (Model Context Protocol) server that provides powerful YouTube interaction capabilities through AI assistants like Kiro. Get video information, extract transcripts, generate AI summaries, and much more - all through natural language commands.
+A comprehensive YouTube MCP (Model Context Protocol) server that provides AI-powered video analysis, playback control, transcript management, and advanced content processing capabilities.
 
 ## Features
 
-### 🎬 Playback Control
-- Play videos in browser or VLC
-- Simple one-command video playback
-- Support for both browser and VLC player
+### 🎬 Video Playback
+- Play videos in browser or VLC player
+- Audio-only playback with ffplay
+- Video segment playback with timestamp control
+- Active playback session management
 
-### 🔍 Data Retrieval
-- Fetch comprehensive video metadata (title, duration, views, likes, description, channel info)
-- Get playlist information with complete video lists
-- Retrieve channel statistics and information
-- YouTube search with customizable result count (1-50 results)
-- Music-specific search with artist/album detection
-- Download video thumbnails in multiple quality options (maxres, high, medium, default)
+### 📊 Data Retrieval
+- Get detailed video information (title, views, likes, duration, etc.)
+- Fetch playlist details with all videos
+- Retrieve channel information and statistics
+- Search YouTube videos and music
+- Download video thumbnails in multiple qualities
 
-### 📝 Transcript Processing
-- Extract official YouTube transcripts
-- Optional language selection for transcripts
-- AI-powered transcript translation to any language
-- Timestamp-aligned formatting support
+### 📝 Transcript Management
+- Get official video transcripts
+- AI-powered transcript generation (when official unavailable)
+- Translate transcripts to any language
+- Format transcripts with or without timestamps
 
-### 🧠 AI-Powered Analysis (Gemini)
-- Video summarization with customizable word count
-- Automatic chapter generation with intelligent timestamps
-- Keyword extraction with relevance scoring (customizable count)
-- Topic detection and categorization
-- AI-powered highlight generation (5-10 highlights with timestamps, descriptions, and scores)
+### 🤖 AI-Powered Analysis
+- Generate video summaries with key points
+- Auto-generate chapter markers
+- Extract relevant keywords with relevance scores
+- Detect topics and categories
+- Create AI-powered video highlights
 
-## Available MCP Tools (13 Total)
-
-All tools are registered and available through the Model Context Protocol interface.
-
-### Playback (1 tool)
-- `play_youtube_video` - Play video in browser or VLC with player selection
-
-### Data Retrieval (6 tools)
-- `get_video_info` - Get comprehensive video metadata (title, duration, views, likes, description)
-- `get_playlist_info` - Get playlist information with video list
-- `get_channel_info` - Get channel statistics and information
-- `search_youtube` - Search YouTube with customizable result count (1-50)
-- `search_music` - Music-specific search with artist/album detection
-- `download_thumbnail` - Download video thumbnail in multiple quality options (maxres, high, medium, default)
-
-### Transcript (2 tools)
-- `get_transcript` - Get official YouTube transcript with optional language selection
-- `translate_transcript` - Translate transcript to any target language using AI
-
-### AI Analysis (4 tools)
-- `summarize_video` - Generate AI-powered video summary with customizable word count
-- `generate_chapters` - Create intelligent chapter markers with timestamps
-- `get_keywords` - Extract relevant keywords with relevance scoring (customizable count)
-- `detect_topics` - Detect and categorize video topics using AI
-- `generate_video_highlights` - Generate AI-powered highlight moments (5-10 highlights)
+### 🎯 Advanced Features
+- Real-time audio streaming without downloads
+- Podcast mode (audio + transcript + summary + chapters + keywords)
+- Video highlight generation with scoring
+- Caption burning onto videos
 
 ## Installation
 
@@ -62,353 +42,262 @@ All tools are registered and available through the Model Context Protocol interf
 
 - Node.js >= 18.0.0
 - npm >= 9.0.0
-- FFmpeg (automatically installed)
-- VLC Media Player (optional, for playback features)
+- Google Gemini API key (required for AI features)
+- Optional: VLC Media Player (for VLC playback)
+- Optional: FFmpeg (for audio playback and processing)
 
 ### Setup
 
+1. Clone the repository:
 ```bash
-# Clone the repository
 git clone <repository-url>
 cd yt-ninja
+```
 
-# Install dependencies
+2. Install dependencies:
+```bash
 npm install
+```
 
-# Set up environment variables
+3. Configure environment variables:
+```bash
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+```
 
-# Build the project
+Edit `.env` and add your configuration:
+```env
+# Required
+GEMINI_API_KEY=your-google-gemini-api-key
+
+# Optional
+DOWNLOAD_DIR=./downloads
+TEMP_DIR=./temp
+MAX_CONCURRENT_DOWNLOADS=3
+LOG_LEVEL=info
+```
+
+4. Build the project:
+```bash
 npm run build
 ```
 
-## Usage
+## Configuration
 
-### Running the MCP Server
+### Environment Variables
 
-**Development mode:**
-```bash
-npm run dev
-```
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `GEMINI_API_KEY` | Yes | - | Google Generative AI API key for AI features |
+| `DOWNLOAD_DIR` | No | `./downloads` | Directory for downloaded files |
+| `TEMP_DIR` | No | `./temp` | Temporary files directory |
+| `MAX_CONCURRENT_DOWNLOADS` | No | `3` | Maximum concurrent downloads |
+| `LOG_LEVEL` | No | `info` | Logging level (error, warn, info, debug) |
 
-**Production mode:**
-```bash
-npm start
-```
+### Getting a Gemini API Key
 
-### MCP Client Configuration
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy the key and add it to your `.env` file
 
-Add to your Kiro MCP configuration (`.kiro/settings/mcp.json`):
+### MCP Configuration
+
+Add to your MCP settings file (`.kiro/settings/mcp.json` or `~/.kiro/settings/mcp.json`):
 
 ```json
 {
   "mcpServers": {
     "yt-ninja": {
       "command": "node",
-      "args": ["D:/MCP/YT-Ninja/dist/index.js"],
+      "args": ["/path/to/yt-ninja/dist/index.js"],
       "env": {
-        "GEMINI_API_KEY": "your-api-key-here",
-        "DOWNLOAD_DIR": "./downloads",
-        "TEMP_DIR": "./temp",
-        "MAX_CONCURRENT_DOWNLOADS": "3",
-        "LOG_LEVEL": "info"
+        "GEMINI_API_KEY": "your-api-key-here"
       },
-      "disabled": false,
-      "autoApprove": [
-        "get_video_info",
-        "search_youtube",
-        "get_transcript",
-        "search_music",
-        "get_playlist_info",
-        "get_channel_info",
-        "download_thumbnail",
-        "detect_topics",
-        "get_keywords"
-      ]
+      "disabled": false
     }
   }
 }
 ```
 
-## Usage Examples
-
-### Quick Start Examples
-
-**Get video information:**
-```
-"Get info for this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Get video summary:**
-```
-"Summarize this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Get transcript:**
-```
-"Get the transcript of this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Search YouTube:**
-```
-"Search YouTube for 'TypeScript tutorial' and show me the top 5 results"
-```
-
-**Search for music:**
-```
-"Search for 'Beethoven Symphony' music videos"
-```
-
-**Download thumbnail:**
-```
-"Download the thumbnail for this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-### Advanced Workflows
-
-**Generate chapters:**
-```
-"Generate chapter markers for this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Translate transcript:**
-```
-"Get the transcript of this video and translate it to Spanish: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Extract keywords:**
-```
-"Extract the top 10 keywords from this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Detect topics:**
-```
-"Detect the main topics discussed in this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Generate highlights:**
-```
-"Generate 7 highlight moments from this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-**Play video:**
-```
-"Play this video in VLC: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-```
-
-## Tool Reference
+## Available Tools
 
 ### Playback Tools
 
 #### `play_youtube_video`
-Play YouTube video in browser or VLC player.
+Play a YouTube video in browser or VLC player.
 
 **Parameters:**
-- `url` (required): YouTube video URL
-- `player` (optional): Player to use - `browser` or `vlc` (default: `browser`)
+- `url` (string, required): YouTube video URL
+- `player` (string, optional): Player type - `browser` or `vlc` (default: `browser`)
 
-**Returns:**
-- `success`: Boolean indicating success
-- `videoTitle`: Title of the video
-- `duration`: Video duration (HH:MM:SS)
-- `player`: Player used
-- `processId`: Process ID of launched player
-
----
+**Example:**
+```json
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "player": "browser"
+}
+```
 
 ### Data Retrieval Tools
 
 #### `get_video_info`
-Get comprehensive YouTube video information.
+Get comprehensive information about a YouTube video.
 
 **Parameters:**
-- `url` (required): YouTube video URL
+- `url` (string, required): YouTube video URL
 
-**Returns:**
-- `title`: Video title
-- `duration`: Video duration
-- `views`: View count
-- `likes`: Like count
-- `description`: Video description
-- `channel`: Channel information
-- `publishDate`: Publication date
-- `thumbnails`: Available thumbnail URLs
+**Returns:** Video title, description, channel, views, likes, duration, tags, thumbnail, etc.
 
 #### `get_playlist_info`
-Get YouTube playlist information with video list.
+Get information about a YouTube playlist.
 
 **Parameters:**
-- `url` (required): YouTube playlist URL
+- `url` (string, required): YouTube playlist URL
 
-**Returns:**
-- `title`: Playlist title
-- `videoCount`: Number of videos
-- `videos`: Array of video information
-- `channel`: Channel information
+**Returns:** Playlist title, description, video count, total duration, list of videos
 
 #### `get_channel_info`
-Get YouTube channel statistics and information.
+Get information about a YouTube channel.
 
 **Parameters:**
-- `channelId` (required): Channel ID or URL
+- `channelId` (string, required): Channel ID or URL
 
-**Returns:**
-- `name`: Channel name
-- `subscriberCount`: Subscriber count
-- `videoCount`: Total videos
-- `viewCount`: Total views
-- `description`: Channel description
+**Returns:** Channel name, description, subscriber count, total views, video count
 
 #### `search_youtube`
-Search YouTube with customizable result count.
+Search for videos on YouTube.
 
 **Parameters:**
-- `query` (required): Search query
-- `maxResults` (optional): Maximum results (1-50, default: 10)
+- `query` (string, required): Search query
+- `maxResults` (number, optional): Maximum results (1-50, default: 10)
 
-**Returns:**
-- Array of search results with title, channel, duration, views, URL
+**Returns:** Array of search results with video details
 
 #### `search_music`
-Music-specific YouTube search with artist/album detection.
+Search specifically for music on YouTube.
 
 **Parameters:**
-- `query` (required): Music search query
-- `maxResults` (optional): Maximum results (1-50, default: 10)
+- `query` (string, required): Music search query
+- `maxResults` (number, optional): Maximum results (1-50, default: 10)
 
-**Returns:**
-- Array of music results with title, artist, album, channel, URL
+**Returns:** Array of music search results
 
 #### `download_thumbnail`
-Download video thumbnail image.
+Download a video thumbnail image.
 
 **Parameters:**
-- `url` (required): YouTube video URL
-- `outputPath` (optional): Output file path
-- `quality` (optional): Thumbnail quality - `maxres`, `high`, `medium`, `default` (default: `maxres`)
-
-**Returns:**
-- `success`: Boolean indicating success
-- `outputPath`: Path to downloaded thumbnail
-- `thumbnailUrl`: URL of the thumbnail
-- `fileSize`: File size in bytes
-
----
+- `url` (string, required): YouTube video URL
+- `outputPath` (string, optional): Output file path
+- `quality` (string, optional): Quality - `maxres`, `high`, `medium`, `default` (default: `maxres`)
 
 ### Transcript Tools
 
 #### `get_transcript`
-Get official YouTube transcript.
+Get the transcript/subtitles of a video.
 
 **Parameters:**
-- `url` (required): YouTube video URL
-- `language` (optional): Language code (e.g., 'en', 'es', 'fr')
+- `url` (string, required): YouTube video URL
+- `language` (string, optional): Language code (e.g., 'en', 'es', 'fr')
 
-**Returns:**
-- `success`: Boolean indicating success
-- `transcript`: Full transcript text
-- `language`: Transcript language
-- `timestamps`: Array of timestamped segments
-- `source`: Source type ('official' or 'ai-generated')
+**Returns:** Transcript text, language, timestamps, source type
 
 #### `translate_transcript`
-Translate video transcript to any language using AI.
+Translate a video transcript to another language.
 
 **Parameters:**
-- `url` (required): YouTube video URL
-- `targetLanguage` (required): Target language (e.g., 'Spanish', 'French', 'German')
+- `url` (string, required): YouTube video URL
+- `targetLanguage` (string, required): Target language code
 
-**Returns:**
-- `success`: Boolean indicating success
-- `transcript`: Translated transcript text
-- `language`: Target language
-- `timestamps`: Original timestamps
-- `source`: Source type
-
----
+**Returns:** Translated transcript with original timestamps
 
 ### AI Analysis Tools
 
 #### `summarize_video`
-Generate AI-powered video summary.
+Generate an AI-powered summary of a video.
 
 **Parameters:**
-- `url` (required): YouTube video URL
-- `maxWords` (optional): Maximum words in summary (default: 200)
+- `url` (string, required): YouTube video URL
+- `maxWords` (number, optional): Maximum words in summary (default: 200)
 
-**Returns:**
-- `success`: Boolean indicating success
-- `summary`: Generated summary text
-- `keyPoints`: Array of key points
-- `wordCount`: Actual word count
+**Returns:** Summary text, key points, word count
 
 #### `generate_chapters`
-Create intelligent chapter markers with timestamps.
+Auto-generate chapter markers for a video.
 
 **Parameters:**
-- `url` (required): YouTube video URL
+- `url` (string, required): YouTube video URL
 
-**Returns:**
-- Array of chapters with:
-  - `timestamp`: Chapter start time (HH:MM:SS)
-  - `title`: Chapter title
-  - `description`: Chapter description
+**Returns:** Array of chapters with timestamps, titles, and descriptions
 
 #### `get_keywords`
-Extract relevant keywords with relevance scoring.
+Extract relevant keywords from a video.
 
 **Parameters:**
-- `url` (required): YouTube video URL
-- `count` (optional): Number of keywords (default: 15)
+- `url` (string, required): YouTube video URL
+- `count` (number, optional): Number of keywords (default: 15)
 
-**Returns:**
-- Array of keywords with:
-  - `keyword`: Keyword text
-  - `relevance`: Relevance score (0.0-1.0)
-  - `category`: Keyword category
+**Returns:** Array of keywords with relevance scores and frequency
 
 #### `detect_topics`
-Detect and categorize video topics using AI.
+Detect topics and categories in a video.
 
 **Parameters:**
-- `url` (required): YouTube video URL
+- `url` (string, required): YouTube video URL
 
-**Returns:**
-- Array of topics with:
-  - `topic`: Topic name
-  - `confidence`: Confidence score (0.0-1.0)
-  - `category`: Topic category
+**Returns:** Array of topics with confidence scores and categories
 
 #### `generate_video_highlights`
-Generate AI-powered highlight moments.
+Generate AI-powered video highlights.
 
 **Parameters:**
-- `url` (required): YouTube video URL
-- `count` (optional): Number of highlights (5-10, default: 7)
+- `url` (string, required): YouTube video URL
+- `count` (number, optional): Number of highlights (5-10, default: 7)
 
-**Returns:**
-- Array of highlights with:
-  - `timestamp`: Highlight start time (HH:MM:SS)
-  - `duration`: Highlight duration (HH:MM:SS)
-  - `description`: Highlight description
-  - `reason`: Why this moment is significant
-  - `score`: Importance score (0.0-1.0)
+**Returns:** Array of highlight moments with timestamps, descriptions, reasons, and scores
 
----
+## Usage Examples
+
+### Using with Kiro AI
+
+Once configured as an MCP server, you can use YT-NINJA through natural language:
+
+```
+"Get information about this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+
+"Summarize this YouTube video in 150 words"
+
+"Generate chapters for this tutorial video"
+
+"Extract the top 20 keywords from this video"
+
+"Get the transcript and translate it to Spanish"
+```
+
+### Programmatic Usage
+
+```typescript
+import { dataManager, aiAnalyzer, transcriptManager } from 'yt-ninja';
+
+// Get video info
+const videoInfo = await dataManager.getVideoInfo('https://youtube.com/watch?v=...');
+
+// Generate summary
+const summary = await aiAnalyzer.summarizeVideo('https://youtube.com/watch?v=...', 200);
+
+// Get transcript
+const transcript = await transcriptManager.getTranscript('https://youtube.com/watch?v=...');
+```
 
 ## Development
 
 ### Scripts
 
-```bash
-npm run dev          # Run in development mode
-npm run build        # Build for production
-npm start            # Run production build
-npm run lint         # Lint code
-npm run format       # Format code
-npm run type-check   # Check TypeScript types
-```
+- `npm run dev` - Run in development mode with hot reload
+- `npm run build` - Build for production
+- `npm start` - Start the production server
+- `npm run lint` - Lint code
+- `npm run format` - Format code with Prettier
+- `npm run type-check` - Check TypeScript types
 
 ### Project Structure
 
@@ -417,77 +306,41 @@ yt-ninja/
 ├── src/
 │   ├── index.ts              # Entry point
 │   ├── server.ts             # MCP server setup
-│   ├── managers/             # Business logic managers
-│   │   ├── DataManager.ts
-│   │   ├── PlaybackManager.ts
-│   │   ├── TranscriptManager.ts
-│   │   ├── AIAnalyzer.ts
-│   │   ├── MediaProcessor.ts
-│   │   └── AdvancedFeaturesManager.ts
-│   ├── integrations/         # External service wrappers
-│   │   ├── youtube.ts
-│   │   ├── genai.ts
-│   │   ├── ffmpeg.ts
-│   │   └── process.ts
-│   ├── utils/                # Utility functions
-│   └── types/                # TypeScript types
-├── downloads/                # Downloaded files directory
-└── dist/                     # Build output
+│   ├── integrations/         # External service integrations
+│   │   ├── youtube.ts        # YouTube API client
+│   │   ├── genai.ts          # Google GenAI client
+│   │   ├── ffmpeg.ts         # FFmpeg integration
+│   │   └── process.ts        # Process management
+│   ├── managers/             # Feature managers
+│   │   ├── DataManager.ts    # Data retrieval
+│   │   ├── PlaybackManager.ts # Playback control
+│   │   ├── TranscriptManager.ts # Transcript operations
+│   │   ├── AIAnalyzer.ts     # AI analysis
+│   │   ├── MediaProcessor.ts # Media processing
+│   │   └── AdvancedFeaturesManager.ts # Advanced features
+│   ├── types/                # TypeScript type definitions
+│   └── utils/                # Utility functions
+├── dist/                     # Compiled output
+├── downloads/                # Downloaded files
+├── .env                      # Environment configuration
+└── package.json
 ```
 
-## Environment Variables
+## Error Handling
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GEMINI_API_KEY` | Google GenAI API key (required) | - |
-| `DOWNLOAD_DIR` | Download directory | `./downloads` |
-| `TEMP_DIR` | Temporary files directory | `./temp` |
-| `MAX_CONCURRENT_DOWNLOADS` | Max concurrent downloads | `3` |
-| `LOG_LEVEL` | Logging level | `info` |
+YT-NINJA provides detailed error messages with suggestions:
 
-## Technology Stack
-
-- **MCP Framework:** @modelcontextprotocol/sdk
-- **YouTube API:** youtubei.js
-- **AI Services:** @google/genai (Gemini)
-- **Media Processing:** fluent-ffmpeg
-- **Validation:** zod
-
-## Troubleshooting
-
-### Common Issues
-
-**"GEMINI_API_KEY environment variable is required"**
-- Solution: Set your Google GenAI API key in `.env` file or environment
-- Get API key from: https://aistudio.google.com/api-keys
-
-
-
-**"FFmpeg error" during conversion**
-- Solution: FFmpeg is automatically installed, but if issues persist:
-  - Check if input file exists and is readable
-  - Verify output format is supported
-  - Ensure sufficient disk space
-
-**"Video unavailable" or "Private video"**
-- Solution: Verify the video is publicly accessible
-- Check if the video URL is correct
-- Some videos may be geo-restricted
-
-**"Transcript not available"**
-- Solution: Not all videos have official transcripts
-- Try videos with closed captions enabled
-- AI-powered transcript generation is available but requires audio extrac
-
-**"Rate limit exceeded"**
-- Solution: YouTube may temporarily rate limit requests
-- Wait a few minutes before retrying
-- Reduce the frequency of requests
-
-### Debug Mode
-
-Enable detailed logging:
-```bash
-export LOG_LEVEL=debug
-npm start
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_URL",
+    "message": "Invalid YouTube video URL",
+    "details": { "url": "..." },
+    "suggestions": [
+      "Provide a valid YouTube video URL",
+      "Example: https://www.youtube.com/watch?v=VIDEO_ID"
+    ]
+  }
+}
 ```
