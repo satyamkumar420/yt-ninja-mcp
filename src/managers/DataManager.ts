@@ -8,12 +8,7 @@ import type {
   SearchResult,
   MusicSearchResult,
 } from '../types/index.js';
-import {
-  YouTubeURLValidator,
-  ErrorCode,
-  YTNinjaError,
-  formatMetadata,
-} from '../utils/index.js';
+import { YouTubeURLValidator, ErrorCode, YTNinjaError } from '../utils/index.js';
 
 /**
  * Data Manager for YouTube metadata operations
@@ -280,34 +275,6 @@ export class DataManager {
       // Error is already classified by YouTube client
       throw error;
     }
-  }
-
-  /**
-   * Format video info as JSON string
-   */
-  formatVideoInfo(videoInfo: VideoInfo): string {
-    return formatMetadata(videoInfo as unknown as Record<string, unknown>);
-  }
-
-  /**
-   * Format playlist info as JSON string
-   */
-  formatPlaylistInfo(playlistInfo: PlaylistInfo): string {
-    return formatMetadata(playlistInfo as unknown as Record<string, unknown>);
-  }
-
-  /**
-   * Format channel info as JSON string
-   */
-  formatChannelInfo(channelInfo: ChannelInfo): string {
-    return formatMetadata(channelInfo as unknown as Record<string, unknown>);
-  }
-
-  /**
-   * Format search results as JSON string
-   */
-  formatSearchResults(results: SearchResult[]): string {
-    return formatMetadata(results as unknown as Record<string, unknown>);
   }
 
   /**

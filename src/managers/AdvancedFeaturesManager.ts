@@ -1,8 +1,6 @@
-// Advanced Features Manager - Real-time streaming, podcast mode, highlights, and caption burning
+// Advanced Features Manager - Video highlights generation
 
-import type {
-  HighlightResult,
-} from '../types/index.js';
+import type { HighlightResult } from '../types/index.js';
 import { TranscriptManager } from './TranscriptManager.js';
 import { AIAnalyzer } from './AIAnalyzer.js';
 import { DataManager } from './DataManager.js';
@@ -16,10 +14,8 @@ export class AdvancedFeaturesManager {
   constructor(
     private transcriptManager?: TranscriptManager,
     private aiAnalyzer?: AIAnalyzer,
-    private dataManager?: DataManager,
+    private dataManager?: DataManager
   ) { }
-
-
 
   /**
    * Generate video highlights using AI
@@ -35,9 +31,18 @@ export class AdvancedFeaturesManager {
       const videoInfo = await this.dataManager.getVideoInfo(url);
       const transcriptResult = await this.transcriptManager.getTranscript(url);
 
-      // Use AI to identify significant moments from transcript
-      const videoDurationSeconds = this.parseDuration(videoInfo.duration);
+      // Parse duration to seconds
+      const parts = videoInfo.duration.split(':').map(Number);
+      let videoDurationSeconds = 0;
+      if (parts.length === 3) {
+        videoDurationSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+      } else if (parts.length === 2) {
+        videoDurationSeconds = parts[0] * 60 + parts[1];
+      } else {
+        videoDurationSeconds = parts[0];
+      }
 
+      // Use AI to identify significant moments from transcript
       const aiHighlights = await this.aiAnalyzer.generateHighlights(
         transcriptResult.transcript,
         videoDurationSeconds,
@@ -46,7 +51,7 @@ export class AdvancedFeaturesManager {
       );
 
       // Convert to HighlightResult format
-      const highlights: HighlightResult[] = aiHighlights.map(h => ({
+      const highlights: HighlightResult[] = aiHighlights.map((h) => ({
         timestamp: h.timestamp,
         duration: h.duration,
         clipPath: '', // No download, just timestamp info
@@ -60,22 +65,6 @@ export class AdvancedFeaturesManager {
       throw wrapError(error);
     }
   }
-
-  /**
-   * Parse duration string (HH:MM:SS) to seconds
-   */
-  private parseDuration(duration: string): number {
-    const parts = duration.split(':').map(Number);
-    if (parts.length === 3) {
-      return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else if (parts.length === 2) {
-      return parts[0] * 60 + parts[1];
-    }
-    return parts[0];
-  }
-
-
-
 }
 
 // Singleton will be created after all managers are initialized

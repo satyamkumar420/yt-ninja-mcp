@@ -27,22 +27,3 @@ export interface Topic {
   confidence: number;
   category: string;
 }
-
-// AI Podcast Report (different from media.ts)
-export interface AIPodcastReport {
-  audioPath: string;
-  transcript: string;
-  summary: SummaryResult;
-  chapters: Chapter[];
-  keywords: Keyword[];
-  duration: string;
-}
-
-// AI Highlight (different from media.ts)
-export interface AIHighlightResult {
-  clipPath: string;
-  timestamp: string;
-  duration: string;
-  description: string;
-  reason: string;
-}

@@ -1,19 +1,15 @@
-// Playback Manager - Handles video and audio playback operations
+// Playback Manager - Handles video playback operations
 
 import { youtubeClient, ProcessManager } from '../integrations/index.js';
 import type { PlaybackResult } from '../types/index.js';
-import {
-  YouTubeURLValidator,
-  ErrorCode,
-  YTNinjaError,
-} from '../utils/index.js';
+import { YouTubeURLValidator, ErrorCode, YTNinjaError } from '../utils/index.js';
 
 /**
- * Playback Manager for controlling video and audio playback
+ * Playback Manager for controlling video playback
  */
 export class PlaybackManager {
   /**
-   * Play video in browser or VLC
+   * Play video in browser
    */
   async playVideo(url: string, player: 'browser' | 'vlc' = 'browser'): Promise<PlaybackResult> {
     // Validate URL
@@ -44,35 +40,24 @@ export class PlaybackManager {
       // Get video info for metadata
       const videoInfo = await youtubeClient.getVideoInfo(videoId);
 
-      let processId: number;
-
-      // Launch player based on preference
+      // VLC is not supported, always use browser
       if (player === 'vlc') {
-        // Check if VLC is available
-        const vlcAvailable = await ProcessManager.isVLCAvailable();
-        if (!vlcAvailable) {
-          throw new YTNinjaError(
-            ErrorCode.PLAYER_NOT_FOUND,
-            'VLC player not found',
-            undefined,
-            [
-              'Install VLC Media Player',
-              'Download from: https://www.videolan.org/vlc/',
-              'Or use browser playback instead',
-            ]
-          );
-        }
-        processId = ProcessManager.launchVLC(url);
-      } else {
-        // Launch browser
-        processId = ProcessManager.launchBrowser(url);
+        throw new YTNinjaError(
+          ErrorCode.PLAYER_NOT_FOUND,
+          'VLC player is not supported',
+          undefined,
+          ['Use browser playback instead']
+        );
       }
+
+      // Launch browser
+      const processId = ProcessManager.launchBrowser(url);
 
       return {
         success: true,
         videoTitle: videoInfo.title,
         duration: videoInfo.duration,
-        player,
+        player: 'browser',
         processId,
       };
     } catch (error) {
@@ -84,20 +69,6 @@ export class PlaybackManager {
         ['Check if the video is accessible']
       );
     }
-  }
-
-  /**
-   * Get active playback sessions
-   */
-  getActivePlayback(): number[] {
-    return ProcessManager.getActiveProcessIds();
-  }
-
-  /**
-   * Check if any playback is active
-   */
-  hasActivePlayback(): boolean {
-    return ProcessManager.hasActivePlayback();
   }
 }
 

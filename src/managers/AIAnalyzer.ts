@@ -3,14 +3,7 @@
 import { youtubeClient, genaiClient } from '../integrations/index.js';
 import { transcriptManager } from './TranscriptManager.js';
 import type { SummaryResult, Chapter, Keyword, Topic } from '../types/index.js';
-import {
-  YouTubeURLValidator,
-  ErrorCode,
-  YTNinjaError,
-  formatChapters,
-  formatKeywords,
-  formatTopics,
-} from '../utils/index.js';
+import { YouTubeURLValidator, ErrorCode, YTNinjaError } from '../utils/index.js';
 
 /**
  * AI Analyzer for content analysis operations
@@ -30,16 +23,9 @@ export class AIAnalyzer {
     }
 
     try {
-      // Get transcript (with fallback to AI generation)
-      let transcript: string;
-      try {
-        const transcriptResult = await transcriptManager.getTranscript(url);
-        transcript = transcriptResult.transcript;
-      } catch {
-        // Fallback to AI generation
-        const generatedTranscript = await transcriptManager.generateTranscript(url);
-        transcript = generatedTranscript.transcript;
-      }
+      // Get transcript
+      const transcriptResult = await transcriptManager.getTranscript(url);
+      const transcript = transcriptResult.transcript;
 
       // Generate summary using GenAI
       const summary = await genaiClient.summarizeVideo(transcript, maxWords);
@@ -173,27 +159,6 @@ export class AIAnalyzer {
         ['Check if the video has transcripts', 'Verify your AI API key is valid']
       );
     }
-  }
-
-  /**
-   * Format chapters as string
-   */
-  formatChapters(chapters: Chapter[]): string {
-    return formatChapters(chapters);
-  }
-
-  /**
-   * Format keywords as string
-   */
-  formatKeywords(keywords: Keyword[]): string {
-    return formatKeywords(keywords);
-  }
-
-  /**
-   * Format topics as string
-   */
-  formatTopics(topics: Topic[]): string {
-    return formatTopics(topics);
   }
 
   /**
