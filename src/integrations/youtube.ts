@@ -293,6 +293,23 @@ export class YouTubeClient {
           // Extract actual channel ID from metadata
           const actualChannelId = metadata.external_id || (channel as any)?.id || resolvedChannelId;
 
+          // If subscriber count is still 0, try HTML scraping as fallback
+          if (subscriberCount === 0) {
+            try {
+              const channelUrl = `https://www.youtube.com/channel/${actualChannelId}`;
+              const response = await fetch(channelUrl);
+              const html = await response.text();
+
+              // Try to extract subscriber count from HTML
+              const subMatch = html.match(/"subscriberCountText":\{"simpleText":"([\d.KMB]+)\s+subscribers?"\}/i);
+              if (subMatch) {
+                subscriberCount = this.parseSubscriberCount(subMatch[1]);
+              }
+            } catch {
+              // Silently fail, keep 0
+            }
+          }
+
           return {
             channelId: actualChannelId,
             name: metadata.title || 'Unknown',
