@@ -102,7 +102,7 @@ npm run build
 
 ### MCP Configuration
 
-Add to your MCP settings file (`.kiro/settings/mcp.json` or `~/.kiro/settings/mcp.json`):
+Add to your MCP settings file (`mcp.json`):
 
 ```json
 {
