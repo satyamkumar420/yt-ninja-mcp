@@ -98,9 +98,9 @@ export class DataManager {
    * Get channel information
    */
   async getChannelInfo(urlOrId: string): Promise<ChannelInfo> {
-    let channelId: string | null = null;
+    let channelId: string;
 
-    // Check if it's a URL or direct channel ID
+    // Check if it's a URL or direct channel ID/handle
     if (urlOrId.startsWith('http')) {
       // Validate URL
       if (!YouTubeURLValidator.isValidChannelURL(urlOrId)) {
@@ -116,19 +116,19 @@ export class DataManager {
         );
       }
 
-      // Extract channel ID
-      channelId = YouTubeURLValidator.extractChannelID(urlOrId);
+      // Extract channel ID or handle
+      const extracted = YouTubeURLValidator.extractChannelID(urlOrId);
+      if (!extracted) {
+        throw new YTNinjaError(
+          ErrorCode.INVALID_URL,
+          'Could not extract channel ID from URL',
+          { url: urlOrId }
+        );
+      }
+      channelId = extracted;
     } else {
-      // Assume it's a direct channel ID or handle
+      // Direct channel ID or handle
       channelId = urlOrId;
-    }
-
-    if (!channelId) {
-      throw new YTNinjaError(
-        ErrorCode.INVALID_URL,
-        'Could not extract channel ID from URL',
-        { url: urlOrId }
-      );
     }
 
     try {

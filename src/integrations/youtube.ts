@@ -168,58 +168,120 @@ export class YouTubeClient {
       async () => {
         try {
           const client = await this.getClient();
-          const channel = await client.getChannel(channelId);
+
+          // Resolve channel handle to ID if needed
+          let resolvedChannelId = channelId;
+          if (channelId.startsWith('@')) {
+            try {
+              const searchResult = await client.search(channelId, { type: 'channel' });
+              const channelResult = searchResult.results?.find((r: any) => r.type === 'Channel');
+              if (channelResult && (channelResult as any).id) {
+                resolvedChannelId = (channelResult as any).id;
+              }
+            } catch {
+              // If search fails, try using the handle directly
+            }
+          }
+
+          const channel = await client.getChannel(resolvedChannelId);
 
           const metadata = channel.metadata;
           const header = channel.header;
 
-          // Extract subscriber count from header
+          // Extract subscriber count from multiple sources
           let subscriberCount = 0;
-          const subscriberText = (header as any)?.subscribers?.text || (header as any)?.subscriber_count?.text || '0';
-          subscriberCount = this.parseSubscriberCount(subscriberText);
 
-          // Get channel stats from about page for more accurate data
+          // Helper to extract text from various formats
+          const extractText = (obj: any): string => {
+            if (!obj) return '';
+            if (typeof obj === 'string') return obj;
+            if (obj.text) return obj.text;
+            if (obj.simpleText) return obj.simpleText;
+            if (obj.runs && Array.isArray(obj.runs) && obj.runs[0]?.text) return obj.runs[0].text;
+            return String(obj);
+          };
+
+          // Try multiple sources for subscriber count
+          const subSources = [
+            (header as any)?.subscribers,
+            (header as any)?.subscriber_count,
+            (header as any)?.subscriberCountText,
+            (metadata as any)?.subscriber_count,
+            (channel as any)?.subscriber_count,
+          ];
+
+          for (const source of subSources) {
+            if (source) {
+              const text = extractText(source);
+              const parsed = this.parseSubscriberCount(text);
+              if (parsed > 0) {
+                subscriberCount = parsed;
+                break;
+              }
+            }
+          }
+
+          // Get channel stats from about page
           let totalViews = 0;
           let videoCount = 0;
           let createdDate = new Date().toISOString();
 
           try {
-            // Try to get the About tab which contains detailed statistics
             const aboutTab = await channel.getAbout();
 
-            // Extract view count
-            if ((aboutTab as any)?.view_count) {
-              totalViews = parseInt((aboutTab as any).view_count, 10) || 0;
-            } else if ((aboutTab as any)?.metadata?.view_count) {
-              totalViews = parseInt((aboutTab as any).metadata.view_count, 10) || 0;
+            // Extract view count from various possible locations
+            const viewSources = [
+              (aboutTab as any)?.view_count,
+              (aboutTab as any)?.metadata?.view_count,
+              (aboutTab as any)?.stats?.view_count,
+            ];
+
+            for (const source of viewSources) {
+              if (source) {
+                const parsed = typeof source === 'string' ? parseInt(source.replace(/\D/g, ''), 10) : parseInt(String(source), 10);
+                if (!isNaN(parsed) && parsed > 0) {
+                  totalViews = parsed;
+                  break;
+                }
+              }
             }
 
             // Extract video count
-            if ((aboutTab as any)?.video_count) {
-              videoCount = parseInt((aboutTab as any).video_count, 10) || 0;
+            const videoSources = [
+              (aboutTab as any)?.video_count,
+              (aboutTab as any)?.metadata?.video_count,
+              (aboutTab as any)?.stats?.video_count,
+            ];
+
+            for (const source of videoSources) {
+              if (source) {
+                const parsed = typeof source === 'string' ? parseInt(source.replace(/\D/g, ''), 10) : parseInt(String(source), 10);
+                if (!isNaN(parsed) && parsed > 0) {
+                  videoCount = parsed;
+                  break;
+                }
+              }
             }
 
             // Extract channel creation date
-            if ((aboutTab as any)?.joined_date) {
-              const joinedDateObj = (aboutTab as any).joined_date;
-              if (typeof joinedDateObj === 'string') {
-                createdDate = joinedDateObj;
-              } else if (joinedDateObj?.text) {
-                createdDate = joinedDateObj.text;
-              }
-            } else if ((aboutTab as any)?.metadata?.joined_date) {
-              const joinedDateObj = (aboutTab as any).metadata.joined_date;
-              if (typeof joinedDateObj === 'string') {
-                createdDate = joinedDateObj;
-              } else if (joinedDateObj?.text) {
-                createdDate = joinedDateObj.text;
+            const dateSources = [
+              (aboutTab as any)?.joined_date,
+              (aboutTab as any)?.metadata?.joined_date,
+            ];
+
+            for (const source of dateSources) {
+              if (source) {
+                const dateStr = typeof source === 'string' ? source : source?.text || '';
+                if (dateStr) {
+                  createdDate = dateStr;
+                  break;
+                }
               }
             }
           } catch (aboutError) {
             // If About tab fails, try to get video count from videos tab
             try {
               const videosTab = await channel.getVideos();
-              // Estimate video count from available videos
               if (videosTab?.videos) {
                 videoCount = videosTab.videos.length;
               }
@@ -228,35 +290,17 @@ export class YouTubeClient {
             }
           }
 
-          // If subscriber count is still 0, try alternative methods
-          if (subscriberCount === 0) {
-            const altSources = [
-              (metadata as any)?.subscriber_count,
-              (header as any)?.subscriber_count,
-              (channel as any)?.subscriber_count,
-            ];
-
-            for (const source of altSources) {
-              if (source) {
-                const parsed = this.parseSubscriberCount(
-                  typeof source === 'string' ? source : source?.text || ''
-                );
-                if (parsed > 0) {
-                  subscriberCount = parsed;
-                  break;
-                }
-              }
-            }
-          }
+          // Extract actual channel ID from metadata
+          const actualChannelId = metadata.external_id || (channel as any)?.id || resolvedChannelId;
 
           return {
-            channelId,
+            channelId: actualChannelId,
             name: metadata.title || 'Unknown',
             description: metadata.description || '',
             subscriberCount,
             totalViews,
             videoCount,
-            createdDate: typeof createdDate === 'string' ? createdDate : new Date().toISOString(),
+            createdDate,
             thumbnailUrl: metadata.avatar?.[0]?.url || '',
           };
         } catch (error) {
