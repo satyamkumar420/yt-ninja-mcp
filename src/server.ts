@@ -11,7 +11,6 @@ import {
   playbackManager,
   transcriptManager,
   aiAnalyzer,
-
   advancedFeaturesManager,
 } from './managers/index.js';
 import { wrapError } from './utils/index.js';
@@ -126,6 +125,7 @@ export function createServer() {
         required: ['url'],
       },
     },
+
 
     // Transcript tools
     {

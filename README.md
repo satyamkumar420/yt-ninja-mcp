@@ -17,6 +17,8 @@ A comprehensive YouTube MCP (Model Context Protocol) server that provides AI-pow
 - Search YouTube videos and music
 - Download video thumbnails in multiple qualities
 
+
+
 ### 📝 Transcript Management
 - Get official video transcripts
 - AI-powered transcript generation (when official unavailable)

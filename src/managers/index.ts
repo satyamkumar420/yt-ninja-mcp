@@ -3,7 +3,6 @@ export * from './DataManager.js';
 export * from './PlaybackManager.js';
 export * from './TranscriptManager.js';
 export * from './AIAnalyzer.js';
-export * from './MediaProcessor.js';
 export * from './AdvancedFeaturesManager.js';
 
 // Initialize AdvancedFeaturesManager with dependencies after all managers are loaded

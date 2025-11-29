@@ -1,7 +1,6 @@
 // YouTubeI.js wrapper for YouTube operations
 
 import { Innertube, UniversalCache, Log } from 'youtubei.js';
-import vm from 'vm';
 import type {
   VideoInfo,
   PlaylistInfo,
@@ -15,12 +14,6 @@ import { ErrorCode, YTNinjaError, ErrorClassifier, RetryHandler } from '../utils
 // Suppress YouTubeI.js parser warnings
 Log.setLevel(Log.Level.NONE);
 
-// Custom JavaScript evaluator for deciphering URLs
-const jsEvaluator = {
-  evaluate: (code: string) => {
-    return vm.runInNewContext(code);
-  },
-};
 
 /**
  * YouTube client wrapper using YouTubeI.js
@@ -51,10 +44,7 @@ export class YouTubeClient {
           },
         });
 
-        // Set the JavaScript evaluator for deciphering
-        if (this.client.session?.player) {
-          (this.client.session.player as any).evaluate = jsEvaluator.evaluate;
-        }
+
       } catch (error) {
         throw ErrorClassifier.classifyYouTubeError(
           error instanceof Error ? error : new Error(String(error))
@@ -473,90 +463,6 @@ export class YouTubeClient {
     );
   }
 
-  /**
-   * Get video stream URL
-   */
-  async getStreamURL(videoId: string, type: 'video' | 'audio' = 'video'): Promise<string> {
-    return RetryHandler.withRetry(
-      async () => {
-        try {
-          const client = await this.getClient();
-          const info = await client.getInfo(videoId);
-
-          const format = info.chooseFormat({
-            type: type === 'audio' ? 'audio' : 'video+audio',
-            quality: 'best',
-          });
-
-          if (!format.decipher) {
-            return format.url || '';
-          }
-
-          const deciphered = await format.decipher();
-          return (deciphered as any).url || deciphered || '';
-        } catch (error) {
-          throw ErrorClassifier.classifyYouTubeError(
-            error instanceof Error ? error : new Error(String(error))
-          );
-        }
-      },
-      { shouldRetry: RetryHandler.isRetryableError }
-    );
-  }
-
-  /**
-   * Download video stream
-   */
-  async downloadStream(
-    videoId: string,
-    type: 'video' | 'audio' = 'video'
-  ): Promise<ReadableStream<Uint8Array>> {
-    try {
-      const client = await this.getClient();
-
-      // Get video info first
-      const info = await client.getInfo(videoId);
-
-      // Choose format
-      const format = info.chooseFormat({
-        type: type === 'audio' ? 'audio' : 'video+audio',
-        quality: 'best',
-      });
-
-      // Get the download URL
-      let downloadUrl: string;
-
-      if (format.decipher) {
-        // Need to decipher the URL
-        const deciphered = await format.decipher(client.session.player);
-        downloadUrl = typeof deciphered === 'string' ? deciphered : (deciphered as any).url || format.url || '';
-      } else {
-        downloadUrl = format.url || '';
-      }
-
-      if (!downloadUrl) {
-        throw new YTNinjaError(
-          ErrorCode.STREAM_UNAVAILABLE,
-          'Could not get download URL',
-          { videoId },
-          ['The video may be restricted', 'Try a different video']
-        );
-      }
-
-      // Fetch the stream
-      const response = await fetch(downloadUrl);
-      if (!response.ok || !response.body) {
-        throw new Error(`Failed to fetch stream: ${response.status}`);
-      }
-
-      return response.body;
-    } catch (error) {
-      if (error instanceof YTNinjaError) throw error;
-      throw ErrorClassifier.classifyYouTubeError(
-        error instanceof Error ? error : new Error(String(error))
-      );
-    }
-  }
 
   /**
    * Helper: Format duration from seconds
